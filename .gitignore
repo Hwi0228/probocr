@@ -1,3 +1,6 @@
 venv/
 ocr_model_competiton/cropped_lines
 .vscode/
+instance/*.sqlite3
+instance/*.sqlite3-shm
+instance/*.sqlite3-wal

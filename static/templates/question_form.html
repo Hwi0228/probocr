@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f6f7f8">
+  <title>문제 등록 | 콴다조교</title>
+  <style>
+    :root {
+      font-family: "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #292d32;
+      background: #f6f7f8;
+      --line: #eceef0;
+      --blue: #3183f6;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; }
+    button, input, select, textarea { font: inherit; }
+    a { color: inherit; }
+    .app { display: grid; grid-template-columns: 172px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { display: flex; flex-direction: column; min-height: 100vh; padding: 0 10px 12px; background: #fff; border-right: 1px solid var(--line); }
+    .brand { display: flex; height: 49px; align-items: center; gap: 6px; padding: 0 2px; font-size: 15px; font-weight: 800; white-space: nowrap; }
+    .brand-mark { display: grid; width: 16px; height: 16px; place-items: center; border: 4px solid #17191c; border-right-color: #f3a33b; border-radius: 50%; }
+    .brand-mark::after { width: 4px; height: 4px; border-radius: 50%; background: #3287f6; content: ""; }
+    .nav-section { display: grid; gap: 3px; }
+    .nav-link { display: flex; min-height: 34px; align-items: center; gap: 9px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: #43494f; font-size: 12px; font-weight: 600; text-align: left; text-decoration: none; }
+    .nav-link.active { background: #f1f2f3; color: #202429; font-weight: 750; }
+    .nav-icon { display: inline-grid; width: 16px; flex: 0 0 16px; place-items: center; color: #8b9299; font-size: 14px; }
+    .nav-label { margin: 16px 5px 4px; color: #a0a6ac; font-size: 10px; }
+    .sidebar-spacer { flex: 1; min-height: 16px; }
+    main { min-width: 0; padding: 28px; }
+    .page-header { display: flex; max-width: 760px; align-items: center; justify-content: space-between; gap: 12px; margin: 0 auto 18px; }
+    h1 { margin: 0; font-size: 18px; }
+    .back-link { color: #626a72; font-size: 12px; text-decoration: none; }
+    .form-card { max-width: 760px; margin: 0 auto; padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .field { display: grid; align-content: start; gap: 6px; color: #4b5259; font-size: 12px; font-weight: 650; }
+    .field.full { grid-column: 1 / -1; }
+    input, select, textarea { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid #e3e6e9; border-radius: 8px; background: #fff; color: #292d32; font-size: 13px; }
+    textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+    textarea.choices { min-height: 120px; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid #78b5ff; outline-offset: 2px; }
+    .hint { color: #858c93; font-size: 11px; font-weight: 400; }
+    .errors { margin: 0 0 18px; padding: 10px 14px 10px 30px; border-radius: 8px; background: #fff2f2; color: #b43c3c; font-size: 12px; line-height: 1.7; }
+    .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .button { display: inline-flex; min-height: 36px; align-items: center; justify-content: center; padding: 0 14px; border: 1px solid #e3e6e9; border-radius: 9px; background: #fff; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; }
+    .button.primary { border-color: var(--blue); background: var(--blue); color: #fff; }
+    @media (max-width: 760px) {
+      .app { grid-template-columns: 54px minmax(0, 1fr); }
+      .sidebar { align-items: center; padding-right: 4px; padding-left: 4px; }
+      .brand { justify-content: center; width: 100%; font-size: 0; }
+      .nav-link { width: 44px; justify-content: center; padding: 0; }
+      .nav-label, .nav-label-text { display: none; }
+      main { padding: 18px 12px; }
+      .form-card { padding: 16px; }
+    }
+    @media (max-width: 520px) {
+      .fields { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="주 메뉴">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>콴다조교</div>
+      {% for section in nav_sections %}
+      <nav class="nav-section">
+        {% if section.label %}<div class="nav-label">{{ section.label }}</div>{% endif %}
+        {% for item in section["items"] %}
+        {% if item.endpoint %}
+        <a class="nav-link{% if item.endpoint == 'new_question' %} active{% endif %}" href="{{ url_for(item.endpoint) }}"{% if item.endpoint == 'new_question' %} aria-current="page"{% endif %}>
+          <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span><span class="nav-label-text">{{ item.label }}</span>
+        </a>
+        {% else %}
+        <span class="nav-link"><span class="nav-icon" aria-hidden="true">{{ item.icon }}</span><span class="nav-label-text">{{ item.label }}</span></span>
+        {% endif %}
+        {% endfor %}
+      </nav>
+      {% endfor %}
+      <div class="sidebar-spacer"></div>
+      <nav class="nav-section">
+        {% for item in bottom_nav_items %}
+        <span class="nav-link"><span class="nav-icon" aria-hidden="true">{{ item.icon }}</span><span class="nav-label-text">{{ item.label }}</span></span>
+        {% endfor %}
+      </nav>
+    </aside>
+    <main>
+      <header class="page-header">
+        <h1>문제 등록</h1>
+        <a class="back-link" href="{{ url_for('main') }}">문제 DB로 돌아가기</a>
+      </header>
+      <form class="form-card" method="post" action="{{ url_for('new_question') }}">
+        {% if errors %}
+        <ul class="errors" role="alert">
+          {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        <div class="fields">
+          <label class="field">과목
+            <select name="subject" required>
+              <option value="">과목 선택</option>
+              {% for subject in subjects %}
+              <option value="{{ subject }}"{% if form_data.get('subject') == subject %} selected{% endif %}>{{ subject }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field">문제 유형
+            <select name="question_type" required>
+              <option value="">유형 선택</option>
+              {% for question_type in question_types %}
+              <option value="{{ question_type }}"{% if form_data.get('question_type') == question_type %} selected{% endif %}>{{ question_type }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field">배점
+            <input name="points" type="number" min="1" max="100" value="{{ form_data.get('points', '') }}" required>
+          </label>
+          <label class="field">난이도 <span class="hint">선택 사항</span>
+            <select name="difficulty">
+              <option value="">선택 안 함</option>
+              {% for difficulty in difficulties %}
+              <option value="{{ difficulty }}"{% if form_data.get('difficulty') == difficulty %} selected{% endif %}>{{ difficulty }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="field full">문제 내용
+            <textarea name="prompt" maxlength="10000" required>{{ form_data.get('prompt', '') }}</textarea>
+          </label>
+          <label class="field full">선택지 <span class="hint">객관식은 한 줄에 하나씩 2~5개 입력해 주세요. 주관식은 비워 둡니다.</span>
+            <textarea class="choices" name="choices">{{ form_data.get('choices', '') }}</textarea>
+          </label>
+          <label class="field">단원 <span class="hint">선택 사항</span>
+            <input name="topic" maxlength="200" value="{{ form_data.get('topic', '') }}">
+          </label>
+          <label class="field">유형/키워드 <span class="hint">선택 사항</span>
+            <input name="keyword" maxlength="200" value="{{ form_data.get('keyword', '') }}">
+          </label>
+          <label class="field">연도 <span class="hint">선택 사항</span>
+            <input name="year" type="number" min="1" max="2200" value="{{ form_data.get('year', '') }}">
+          </label>
+          <label class="field">페이지 <span class="hint">선택 사항</span>
+            <input name="page" type="number" min="1" max="10000" value="{{ form_data.get('page', '') }}">
+          </label>
+          <label class="field full">출처 <span class="hint">선택 사항</span>
+            <input name="source" maxlength="300" value="{{ form_data.get('source', '') }}">
+          </label>
+        </div>
+        <div class="actions">
+          <a class="button" href="{{ url_for('main') }}">취소</a>
+          <button class="button primary" type="submit">문제 저장</button>
+        </div>
+      </form>
+    </main>
+  </div>
+</body>
+</html>
